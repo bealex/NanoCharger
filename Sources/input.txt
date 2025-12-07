@@ -1,0 +1,45 @@
+// This is an example of uhubctl output
+
+Current status for hub 2-2.4 [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+  Port 1: 02a0 power 5gbps Rx.Detect
+  Port 2: 02a0 power 5gbps Rx.Detect
+  Port 3: 02a0 power 5gbps Rx.Detect
+  Port 4: 02a0 power 5gbps Rx.Detect
+Current status for hub 2-2.3 [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+  Port 1: 02a0 power 5gbps Rx.Detect
+  Port 2: 02a0 power 5gbps Rx.Detect
+  Port 3: 02a0 power 5gbps Rx.Detect
+  Port 4: 02a0 power 5gbps Rx.Detect
+Current status for hub 2-2 [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+  Port 1: 02a0 power 5gbps Rx.Detect
+  Port 2: 02a0 power 5gbps Rx.Detect
+  Port 3: 0243 power 5gbps U2 enable connect [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+  Port 4: 0243 power 5gbps U2 enable connect [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+Current status for hub 2 [1d6b:0003 Linux 6.12.47+rpt-rpi-v8 xhci-hcd xHCI Host Controller 0000:01:00.0, USB 3.00, 4 ports, ppps]
+  Port 1: 02a0 power 5gbps Rx.Detect
+  Port 2: 0203 power 5gbps U0 enable connect [0bda:0411 Generic USB3.2 Hub, USB 3.20, 4 ports, ppps]
+  Port 3: 02a0 power 5gbps Rx.Detect
+  Port 4: 02a0 power 5gbps Rx.Detect
+Current status for hub 1-1.2.4 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+  Port 1: 0100 power
+  Port 2: 0100 power
+  Port 3: 0100 power
+  Port 4: 0100 power
+Current status for hub 1-1.2.3 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+  Port 1: 0100 power
+  Port 2: 0100 power
+  Port 3: 0100 power
+  Port 4: 0100 power
+Current status for hub 1-1.2 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+  Port 1: 0503 power highspeed enable connect [18d1:4ee7 Google Pixel 8 Pro 3A100DLJG0014M]
+  Port 2: 0503 power highspeed enable connect [05ac:12a8 Apple Inc. iPhone 6a49859aedc620eacc6943c34e8586417c655afa]
+  Port 3: 0507 power highspeed suspend enable connect [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+  Port 4: 0507 power highspeed suspend enable connect [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+Current status for hub 1-1 [2109:3431 USB2.0 Hub, USB 2.10, 4 ports, ppps]
+  Port 1: 0100 power
+  Port 2: 0503 power highspeed enable connect [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
+  Port 3: 0100 power
+  Port 4: 0100 power
+Current status for hub 1 [1d6b:0002 Linux 6.12.47+rpt-rpi-v8 xhci-hcd xHCI Host Controller 0000:01:00.0, USB 2.00, 1 ports, ppps]
+  Port 1: 0503 power highspeed enable connect [2109:3431 USB2.0 Hub, USB 2.10, 4 ports, ppps]
+
