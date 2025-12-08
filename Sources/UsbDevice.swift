@@ -78,12 +78,11 @@ struct UsbDevice: Hashable, Comparable {
 
                 let portId = parts[1]
                 let deviceId = String(deviceInfoParts[1].prefix(9))
-                let deviceNameAndUUID = String(deviceInfoParts[1].dropFirst(10)
-                    .trimmingCharacters(in: .whitespacesAndNewlines))
+                let deviceNameAndUUID = String(deviceInfoParts[1].dropFirst(10).trimmingCharacters(in: .whitespaces))
                 let (deviceName, deviceUUID) = if let lastSpaceIndex = deviceNameAndUUID.lastIndex(of: " ") {
                     (
-                        String(deviceNameAndUUID[deviceNameAndUUID.startIndex ..< lastSpaceIndex]),
-                        String(deviceNameAndUUID[lastSpaceIndex...]),
+                        String(deviceNameAndUUID[deviceNameAndUUID.startIndex ..< lastSpaceIndex]).trimmingCharacters(in: .whitespaces),
+                        String(deviceNameAndUUID[deviceNameAndUUID.index(after: lastSpaceIndex)...]).trimmingCharacters(in: .whitespaces),
                     )
                 } else {
                     (deviceNameAndUUID, "—")
