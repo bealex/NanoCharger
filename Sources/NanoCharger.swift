@@ -4,6 +4,8 @@ import Foundation
 import Subprocess
 
 struct Configuration {
+    let isDebugEnabled: Bool = true
+
     var chargingDuration: TimeInterval
 }
 
@@ -26,6 +28,8 @@ struct UsbDevice: Hashable {
 
 @main
 struct NanoCharger {
+    private static let configuration: Configuration = .init(chargingDuration: 2 * 60 * 60) // 2 hours
+
     private static func connectedUsbDevices(noHubs: Bool = true) async throws -> [UsbDevice] {
         #if os(macOS)
         let fileUrl = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appending(path: "input.txt")
@@ -37,6 +41,7 @@ struct NanoCharger {
         #endif
 
         lines = lines.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        log(lines.joined(separator: "\n"))
 
         var result: [UsbDevice] = []
 
@@ -76,16 +81,22 @@ struct NanoCharger {
     }
 
     static func main() async {
-        print("Start")
+        log("Start")
 
         do {
             let devices = try await connectedUsbDevices()
             print(devices.map { "\($0.hubId); \($0.portId) -> \($0.deviceId); \($0.deviceName)" }.joined(separator: "\n"))
         } catch {
-            print("Error \(error)")
+            log("Error \(error)")
         }
 
-        print("Finish")
+        log("Finish")
+    }
+
+    private static func log(_ string: String) {
+        guard configuration.isDebugEnabled else { return }
+
+        print(string)
     }
 }
 
