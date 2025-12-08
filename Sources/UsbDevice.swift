@@ -10,19 +10,15 @@ import Subprocess
                              00008020-001575602E85402E
  */
 
-struct UsbDevice: Hashable, Comparable {
-    var deviceId: String
-    var deviceName: String
-    var deviceUUID: String
-
+struct UsbConnection: Hashable, Comparable {
     var hubId: String
     var portId: String
 
-    static func == (lhs: UsbDevice, rhs: UsbDevice) -> Bool {
-        return lhs.hubId == rhs.hubId && lhs.portId == rhs.portId && lhs.deviceId == rhs.deviceId && lhs.deviceUUID == rhs.deviceUUID
+    static func == (lhs: UsbConnection, rhs: UsbConnection) -> Bool {
+        return lhs.hubId == rhs.hubId && lhs.portId == rhs.portId
     }
 
-    static func < (lhs: UsbDevice, rhs: UsbDevice) -> Bool {
+    static func < (lhs: UsbConnection, rhs: UsbConnection) -> Bool {
         return lhs.hubId == rhs.hubId
             ? lhs.portId < rhs.portId
             : lhs.hubId < rhs.hubId
@@ -31,11 +27,50 @@ struct UsbDevice: Hashable, Comparable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(hubId)
         hasher.combine(portId)
+    }
+
+    func startCharging() async throws {
+        #if os(macOS)
+        print("(fake) Started charging: hub \(hubId); port: \(portId)")
+        #else
+        // uhubctl -a on -l ${hub} -p ${port}
+        let uhubctlResult = try await run(.name("uhubctl"), arguments: [ "-a", "off", "-l", hubId, "-p", portId ], output: .string(limit: 1 << 20))
+        log(uhubctlResult.standardOutput ?? "no output", level: .debug)
+        #endif
+    }
+
+    func stopCharging() async throws {
+        #if os(macOS)
+        print("(fake) Stopped charging: hub \(hubId); port: \(portId)")
+        #else
+        // uhubctl -a on -l ${hub} -p ${port}
+        let uhubctlResult = try await run(.name("uhubctl"), arguments: [ "-a", "on", "-l", hubId, "-p", portId ], output: .string(limit: 1 << 20))
+        log(uhubctlResult.standardOutput ?? "no output", level: .debug)
+        #endif
+    }
+}
+
+struct UsbDevice: Hashable, Comparable {
+    var deviceId: String
+    var deviceName: String
+    var deviceUUID: String
+
+    static func == (lhs: UsbDevice, rhs: UsbDevice) -> Bool {
+        return lhs.deviceId == rhs.deviceId && lhs.deviceUUID == rhs.deviceUUID
+    }
+
+    static func < (lhs: UsbDevice, rhs: UsbDevice) -> Bool {
+        return lhs.deviceId == rhs.deviceId
+            ? lhs.deviceUUID < rhs.deviceUUID
+            : lhs.deviceId < rhs.deviceId
+    }
+
+    func hash(into hasher: inout Hasher) {
         hasher.combine(deviceId)
         hasher.combine(deviceUUID)
     }
 
-    static func connectedUsbDevices(noHubs: Bool = true) async throws -> [UsbDevice] {
+    static func connectedUsbDevices(noHubs: Bool = true) async throws -> [UsbDevice: UsbConnection] {
         #if os(macOS)
         let fileUrl = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appending(path: "input.txt")
         let uhubctlResult = try String(contentsOf: fileUrl, encoding: .utf8)
@@ -48,7 +83,7 @@ struct UsbDevice: Hashable, Comparable {
         lines = lines.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
         log(lines.joined(separator: "\n"))
 
-        var result: [UsbDevice] = []
+        var result: [UsbDevice: UsbConnection] = [:]
 
         func isDeviceOk(name: String, id: String) -> Bool {
             guard noHubs else { return true }
@@ -91,18 +126,12 @@ struct UsbDevice: Hashable, Comparable {
                 log(" ... id \(portId): (\(deviceId), \(deviceName))")
 
                 if isDeviceOk(name: deviceName, id: deviceId) {
-                    log(" ... device \(currentHubId) / \(portId) (\(deviceName) / \(deviceUUID)) can be controlled", level: .info)
-                    result.append(.init(
-                        deviceId: deviceId,
-                        deviceName: deviceName,
-                        deviceUUID: deviceUUID,
-                        hubId: currentHubId,
-                        portId: portId
-                    ))
+                    log(" + device \(currentHubId) / \(portId) (\(deviceId) / \(deviceName) / \(deviceUUID)) can be controlled", level: .info)
+                    result[.init(deviceId: deviceId, deviceName: deviceName, deviceUUID: deviceUUID)] =
+                        .init(hubId: currentHubId, portId: portId)
                 }
             }
         }
         return result
     }
 }
-

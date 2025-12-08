@@ -21,7 +21,7 @@ Current status for hub 2 [1d6b:0003 Linux 6.12.47+rpt-rpi-v8 xhci-hcd xHCI Host 
   Port 3: 02a0 power 5gbps Rx.Detect
   Port 4: 02a0 power 5gbps Rx.Detect
 Current status for hub 1-1.2.4 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
-  Port 1: 0100 power
+  Port 1: 0503 power highspeed enable connect [05ac:12a8 Apple Inc. iPhone 6a49859aedc620eacc6943c34e8586417c655afa]
   Port 2: 0100 power
   Port 3: 0100 power
   Port 4: 0100 power
@@ -32,7 +32,7 @@ Current status for hub 1-1.2.3 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports,
   Port 4: 0100 power
 Current status for hub 1-1.2 [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
   Port 1: 0503 power highspeed enable connect [18d1:4ee7 Google Pixel 8 Pro 3A100DLJG0014M]
-  Port 2: 0503 power highspeed enable connect [05ac:12a8 Apple Inc. iPhone 6a49859aedc620eacc6943c34e8586417c655afa]
+  Port 2: 0503 power highspeed enable connect [05ac:12a8 Apple Inc. iPhone 00008020001575602E85402E]
   Port 3: 0507 power highspeed suspend enable connect [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
   Port 4: 0507 power highspeed suspend enable connect [0bda:5411 Generic USB2.1 Hub, USB 2.10, 4 ports, ppps]
 Current status for hub 1-1 [2109:3431 USB2.0 Hub, USB 2.10, 4 ports, ppps]
