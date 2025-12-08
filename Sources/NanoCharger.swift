@@ -26,7 +26,7 @@ struct UsbDevice: Hashable {
 
 @main
 struct NanoCharger {
-    private static func connectedUsbDevices(noHubs: Bool = true) throws -> [UsbDevice] {
+    private static func connectedUsbDevices(noHubs: Bool = true) async throws -> [UsbDevice] {
         #if os(macOS)
         let fileUrl = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appending(path: "input.txt")
         let uhubctlResult = try String(contentsOf: fileUrl, encoding: .utf8)
@@ -79,7 +79,7 @@ struct NanoCharger {
         print("Start")
 
         do {
-            let devices = try connectedUsbDevices()
+            let devices = try await connectedUsbDevices()
             print(devices.map { "\($0.hubId); \($0.portId) -> \($0.deviceId); \($0.deviceName)" }.joined(separator: "\n"))
         } catch {
             print("Error \(error)")
