@@ -33,7 +33,7 @@ struct NanoCharger {
         var lines: [String] = uhubctlResult.split(separator: "\n").map { "\($0)" }
         #else
         let uhubctlResult = try await run(.name("uhubctl"), arguments: [], output: .string(limit: 1 << 20))
-        var lines: [String] = (uhubctlResult.standardOutput ?? "").split(separator: "\n")
+        var lines: [String] = (uhubctlResult.standardOutput ?? "").split(separator: "\n").map { "\($0)" }
         #endif
 
         lines = lines.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
