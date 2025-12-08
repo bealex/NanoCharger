@@ -59,11 +59,14 @@ struct NanoCharger {
         var currentHubId: String?
         for line in lines {
             if line.hasPrefix("Current status for hub") {
+                log("Found hub: “\(line)”")
                 let parts = line.components(separatedBy: " ")
                 if parts.count > 4 {
                     currentHubId = parts[4]
+                    log(" ... processing “\(currentHubId ?? "nil")”")
                 }
             } else if line.hasPrefix("Port ") {
+                log(" Found port \(line)")
                 let parts = line.components(separatedBy: .init(charactersIn: " :"))
                 let deviceInfoParts = line.components(separatedBy: .init(charactersIn: "[]"))
                 guard parts.count > 1, deviceInfoParts.count > 1, let currentHubId else { continue }
@@ -72,7 +75,10 @@ struct NanoCharger {
                 let deviceId = String(deviceInfoParts[1].prefix(9))
                 let deviceName = String(deviceInfoParts[1].dropFirst(10).trimmingCharacters(in: .whitespacesAndNewlines))
 
+                log(" ... id \(portId): (\(deviceId), \(deviceName))")
+
                 if isDeviceOk(name: deviceName, id: deviceId) {
+                    log(" ... connected device can be controlled)")
                     result.append(.init(deviceId: deviceId, deviceName: deviceName, hubId: currentHubId, portId: portId))
                 }
             }
