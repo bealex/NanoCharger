@@ -22,7 +22,8 @@ final class HubBrowser {
 
     private var quitContinuation: CheckedContinuation<Void, Never>?
     private var pollTask: Task<Void, Never>?
-    private var stdinTask: Task<Void, Never>?
+    private var stdinReaderTask: Task<Void, Never>?
+    private var stdinConsumerTask: Task<Void, Never>?
     private var didQuit: Bool = false
 
     init(terminal: Terminal) {
@@ -41,7 +42,8 @@ final class HubBrowser {
         }
 
         pollTask?.cancel()
-        stdinTask?.cancel()
+        stdinReaderTask?.cancel()
+        stdinConsumerTask?.cancel()
     }
 
     private func installSignalHandlers() {
@@ -95,13 +97,19 @@ final class HubBrowser {
 
     private func startStdinLoop() {
         let term = self.terminal
-        stdinTask = Task.detached(priority: .userInitiated) { [weak self] in
+        let (stream, continuation) = AsyncStream.makeStream(of: Key.self)
+
+        stdinReaderTask = Task.detached(priority: .userInitiated) {
             while !Task.isCancelled {
-                let key = term.readKeyBlocking()
-                guard let key else { break }
-                await MainActor.run {
-                    self?.handle(key: key)
-                }
+                guard let key = term.readKeyBlocking() else { break }
+                continuation.yield(key)
+            }
+            continuation.finish()
+        }
+
+        stdinConsumerTask = Task { @MainActor [weak self] in
+            for await key in stream {
+                self?.handle(key: key)
             }
         }
     }
