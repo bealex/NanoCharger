@@ -1,0 +1,28 @@
+{
+  "maxConcurrentOn": 2,
+  "tickSeconds": 60,
+  "checkpointSeconds": 600,
+  "ports": [
+    {
+      "hubId": "1-1.2",
+      "portId": "1",
+      "label": "Pixel 8 Pro",
+      "chargeDurationMinutes": 90,
+      "restIntervalMinutes": 300
+    },
+    {
+      "hubId": "1-1.2",
+      "portId": "2",
+      "label": "iPhone (office)",
+      "chargeDurationMinutes": 120,
+      "restIntervalMinutes": 360
+    },
+    {
+      "hubId": "1-1.2.4",
+      "portId": "1",
+      "label": "iPhone (kitchen)",
+      "chargeDurationMinutes": 120,
+      "restIntervalMinutes": 360
+    }
+  ]
+}

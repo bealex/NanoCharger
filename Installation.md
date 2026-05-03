@@ -44,7 +44,14 @@ sudo chown -R nanocharger:nanocharger /var/lib/nanocharger
 
 ## Schedule config
 
-Write `/etc/nanocharger/schedule.json`. The schema:
+A ready-to-edit example lives in the repo root at `schedule.sample.json` — copy it and adjust hub/port ids and durations:
+
+```sh
+sudo cp schedule.sample.json /etc/nanocharger/schedule.json
+sudoedit /etc/nanocharger/schedule.json
+```
+
+The schema:
 
 ```json
 {
