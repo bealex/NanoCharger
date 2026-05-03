@@ -64,20 +64,21 @@ actor Scheduler {
         }
 
         // Reconcile actual hardware state to our model: anything we don't think should be on, turn off.
+        // Also warn about configured ports that don't exist on any visible hub.
         do {
             let topology = try await Topology.read()
+            var visiblePorts: Set<String> = []
             for hub in topology.hubs {
-                for port in hub.ports where port.powerOn {
-                    let k = key(hub.id, port.id)
-                    if let state = states[k] {
-                        if state.chargingSince == nil {
-                            log("Reconcile: \(k) is on but should be off; turning off.", level: .info)
-                            try? await UsbConnection(hubId: hub.id, portId: port.id).setPower(false)
-                        }
-                    } else {
-                        // Not managed by us; leave it alone.
+                for port in hub.ports {
+                    visiblePorts.insert(key(hub.id, port.id))
+                    if port.powerOn, let state = states[key(hub.id, port.id)], state.chargingSince == nil {
+                        log("Reconcile: \(key(hub.id, port.id)) is on but should be off; turning off.", level: .info)
+                        try? await UsbConnection(hubId: hub.id, portId: port.id).setPower(false)
                     }
                 }
+            }
+            for configured in states.keys where !visiblePorts.contains(configured) {
+                log("Warning: configured port \(configured) is not visible in uhubctl output; will be skipped until it appears.", level: .info)
             }
         } catch {
             log("Recovery topology read failed: \(error)", level: .info)
@@ -189,10 +190,13 @@ actor Scheduler {
         configFor(hubId: hubId, portId: portId).map { $0.chargeDurationMinutes * 60 }
     }
 
+    /// Every port that exists on any hub the host can see right now, regardless of whether a device is enumerated.
+    /// Required because turning a port off via `uhubctl` makes the connected device disappear from enumeration —
+    /// if we only counted "connected" ports as eligible, we'd never re-power a port we ourselves just turned off.
     private func presentPortsLookup(topology: Topology) -> [String: UsbPort] {
         var result: [String: UsbPort] = [:]
         for hub in topology.hubs {
-            for port in hub.ports where port.isConnected {
+            for port in hub.ports {
                 result[key(hub.id, port.id)] = port
             }
         }
