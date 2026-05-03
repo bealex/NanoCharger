@@ -2,17 +2,13 @@
 
 import Foundation
 
-struct Configuration {
-    let isDebugEnabled: Bool = true
-    let logLevel: LogLevel = .info
-
-    var chargingDuration: TimeInterval
+struct Configuration: Sendable {
+    let isDebugEnabled: Bool
+    let logLevel: LogLevel
 
     func logEnabled(_ level: LogLevel) -> Bool {
         level.rawValue <= logLevel.rawValue
     }
 }
 
-let configuration: Configuration = .init(
-    chargingDuration: 2 * 60 * 60 // 2 hours
-)
+let configuration: Configuration = .init(isDebugEnabled: true, logLevel: .info)

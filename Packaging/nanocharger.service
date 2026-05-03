@@ -1,0 +1,15 @@
+[Unit]
+Description=NanoCharger USB charging scheduler
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nanocharger daemon --config /etc/nanocharger/schedule.json --state-dir /var/lib/nanocharger
+Restart=always
+RestartSec=5s
+User=nanocharger
+StateDirectory=nanocharger
+StateDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

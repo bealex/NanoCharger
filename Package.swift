@@ -18,7 +18,7 @@ let package = Package(
         .executableTarget(name: "NanoCharger", dependencies: [
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
             .product(name: "Subprocess", package: "swift-subprocess"),
-        ], path: "Sources"),
+        ], path: "Sources", exclude: [ "input.txt" ]),
     ],
    swiftLanguageModes: [ .v6 ]
 )
