@@ -18,7 +18,7 @@ CONFIG_FILE="${CONFIG_DIR}/schedule.json"
 STATE_DIR=/var/lib/nanocharger
 SERVICE_NAME=nanocharger.service
 SERVICE_DEST="/etc/systemd/system/${SERVICE_NAME}"
-SERVICE_USER=nanocharger
+# The daemon runs as root by default — see comment in Packaging/nanocharger.service.
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 SAMPLE_CONFIG="${REPO_DIR}/schedule.sample.json"
@@ -69,17 +69,11 @@ if systemctl list-unit-files --type=service 2>/dev/null | awk '{print $1}' | gre
     fi
 fi
 
-# 3) Ensure system user.
-if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
-    green "==> Creating system user '$SERVICE_USER'"
-    sudo useradd --system --home-dir "$STATE_DIR" --shell /usr/sbin/nologin "$SERVICE_USER"
-fi
-
-# 4) Install binary.
+# 3) Install binary.
 green "==> Installing binary -> $BIN_DEST"
 sudo install -m 0755 "$BUILT_BINARY" "$BIN_DEST"
 
-# 4a) Make sure the Swift runtime libraries are on the dynamic loader's search path.
+# 4) Make sure the Swift runtime libraries are on the dynamic loader's search path.
 # Swift's libs (libswiftCore.so, libFoundation.so, ...) are installed under the toolchain prefix and
 # aren't on /etc/ld.so.conf by default, so a binary launched by systemd as a non-login user can fail
 # with "libswiftCore.so: cannot open shared object file". Register the path with ldconfig.
@@ -115,11 +109,14 @@ else
     else
         green "    Already registered: $swift_lib_dir"
     fi
+    # Note: ldconfig only fixes path resolution. If the swift libs live under a per-user $HOME
+    # (e.g. swiftly), other users still cannot read them. The systemd unit therefore runs as root
+    # by default — see Packaging/nanocharger.service for how to switch to an unprivileged user.
 fi
 
-# 5) Ensure /etc and /var directories with correct ownership.
+# 5) Ensure /etc and /var directories.
 sudo install -d -m 0755 "$CONFIG_DIR"
-sudo install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0755 "$STATE_DIR"
+sudo install -d -m 0755 "$STATE_DIR"
 
 # 6) Place config if missing; preserve any existing config.
 config_was_created=false

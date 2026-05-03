@@ -45,14 +45,27 @@ The release binary lands at `.build/release/nanocharger`.
 ```sh
 sudo install -m 0755 .build/release/nanocharger /usr/local/bin/nanocharger
 sudo install -d -m 0755 /etc/nanocharger /var/lib/nanocharger
-sudo useradd --system --home-dir /var/lib/nanocharger --shell /usr/sbin/nologin nanocharger
-sudo chown -R nanocharger:nanocharger /var/lib/nanocharger
 ```
 
-`uhubctl` typically needs root or a udev rule to toggle hub power. Either:
+The shipped systemd unit runs as **root** by default. Two reasons:
 
-- Run the daemon as `root` (drop the `User=` line in the unit), or
-- Add a udev rule that grants the `nanocharger` user write access to the relevant hubs. See the `uhubctl` README for the exact rule pattern; it's a one-liner per hub VID/PID.
+- `uhubctl` requires root (or per-hub udev rules) to toggle VBUS — running unprivileged isn't free anyway.
+- A per-user Swift toolchain (e.g. installed via `swiftly` under `$HOME`) is unreadable by a system user, so `User=nanocharger` would leave the daemon unable to load `libswiftCore.so`.
+
+If you want privilege isolation: add `User=<your-user>` to the unit, set up `uhubctl` udev rules for that user, and make sure the Swift runtime libs are readable by that user (mirror them under `/usr/local/lib/swift/linux/` if your toolchain is per-user).
+
+## Swift runtime libraries
+
+Swift binaries on Linux dynamically link to `libswiftCore.so`, `libFoundation.so`, and friends, which are installed under the toolchain prefix and not on the loader's default search path. Register the path once:
+
+```sh
+swift -print-target-info | grep -A1 runtimeLibraryPaths
+# copy the path it prints, then:
+echo /that/path | sudo tee /etc/ld.so.conf.d/swift.conf
+sudo ldconfig
+```
+
+`./install.sh` does this step automatically.
 
 ## Schedule config
 
