@@ -91,6 +91,7 @@ The scheduler is wall-clock driven, so a 4-hour outage leaves the daemon correct
 `Sources/UI/HubBrowser.swift` is a separate code path that does **not** use the scheduler — it's a direct browser/toggle for the topology, intended for diagnosis (locally on the Pi or over SSH).
 
 - Polls `Topology.read()` every 1 s, diffs against the previous snapshot, and briefly highlights any port whose `device` or `powerOn` changed (1.5 s flash plus a status-line message). Detects changes from any source: physical plug/unplug, the daemon, manual `uhubctl`, or another TUI instance.
+- **Hides hub-to-hub ports.** A port whose connected device is itself a hub that appears elsewhere in the topology is filtered out before rendering, since the user can't plug anything new into it. The detection uses the Linux USB bus-path convention: hub `<parent>` connected via port `<n>` produces a child hub with id `<parent>-<n>` (top-level) or `<parent>.<n>` (nested). Hubs that have no leaf ports left after filtering are hidden entirely. Filtering is TUI-only — the daemon's parser sees the full topology.
 - Up/down moves the cursor between hubs, **skipping hubs that don't support `ppps`** (these are still shown, dimmed). Left/right moves between ports of the selected hub.
 - `p` calls `setPower` on the selected port and forces an immediate re-poll.
 - `Esc` and `Ctrl+C` quit; `Ctrl+C` is delivered as `SIGINT` (the TUI keeps `ISIG` enabled in `termios`) and goes through the same shutdown path. There is no `q` quit.

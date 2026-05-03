@@ -213,7 +213,8 @@ final class HubBrowser {
 
     // MARK: - Topology + change detection
 
-    private func applyTopology(_ next: Topology, isInitial: Bool) {
+    private func applyTopology(_ rawNext: Topology, isInitial: Bool) {
+        let next = filterLeafPorts(rawNext)
         if isInitial {
             topology = next
             recenterSelectionIfNeeded()
@@ -261,6 +262,26 @@ final class HubBrowser {
         if !statusBits.isEmpty {
             setStatus(statusBits.joined(separator: ", "), durationSeconds: 3)
         }
+    }
+
+    /// Drop ports whose connected device is itself a hub already present in the topology, and drop hubs that
+    /// have no leaf ports remaining. Leverages the Linux USB bus-path naming convention: a hub at `<parent>`
+    /// connected via port `<n>` of `<parent>` has id `<parent>-<n>` (top-level) or `<parent>.<n>` (nested).
+    private func filterLeafPorts(_ raw: Topology) -> Topology {
+        let hubIds: Set<String> = Set(raw.hubs.map(\.id))
+        var leafHubs: [UsbHub] = []
+        for var hub in raw.hubs {
+            hub.ports = hub.ports.filter { port in
+                let childId = hub.id.contains("-")
+                    ? "\(hub.id).\(port.id)"
+                    : "\(hub.id)-\(port.id)"
+                return !hubIds.contains(childId)
+            }
+            if !hub.ports.isEmpty {
+                leafHubs.append(hub)
+            }
+        }
+        return .init(hubs: leafHubs)
     }
 
     private func recenterSelectionIfNeeded() {
