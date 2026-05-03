@@ -79,6 +79,44 @@ fi
 green "==> Installing binary -> $BIN_DEST"
 sudo install -m 0755 "$BUILT_BINARY" "$BIN_DEST"
 
+# 4a) Make sure the Swift runtime libraries are on the dynamic loader's search path.
+# Swift's libs (libswiftCore.so, libFoundation.so, ...) are installed under the toolchain prefix and
+# aren't on /etc/ld.so.conf by default, so a binary launched by systemd as a non-login user can fail
+# with "libswiftCore.so: cannot open shared object file". Register the path with ldconfig.
+green "==> Registering Swift runtime libraries with ldconfig"
+swift_lib_dir=""
+for candidate in \
+    /usr/lib/swift/linux \
+    /usr/local/lib/swift/linux \
+    /usr/share/swift/usr/lib/swift/linux \
+    /usr/local/swift/usr/lib/swift/linux \
+    /opt/swift/usr/lib/swift/linux; do
+    if [[ -f "$candidate/libswiftCore.so" ]]; then
+        swift_lib_dir="$candidate"
+        break
+    fi
+done
+if [[ -z "$swift_lib_dir" ]] && command -v python3 >/dev/null; then
+    swift_lib_dir=$(swift -print-target-info 2>/dev/null \
+        | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["paths"]["runtimeLibraryPaths"][0])' \
+        2>/dev/null || true)
+fi
+if [[ -z "$swift_lib_dir" || ! -f "$swift_lib_dir/libswiftCore.so" ]]; then
+    yellow "Could not auto-detect the Swift runtime library directory."
+    yellow "If the daemon fails with 'libswiftCore.so: cannot open shared object file',"
+    yellow "locate libswiftCore.so manually and register the directory:"
+    yellow "  echo /path/to/swift/linux | sudo tee /etc/ld.so.conf.d/swift.conf && sudo ldconfig"
+else
+    ld_conf=/etc/ld.so.conf.d/swift.conf
+    if [[ ! -f "$ld_conf" ]] || ! grep -qxF "$swift_lib_dir" "$ld_conf"; then
+        echo "$swift_lib_dir" | sudo tee "$ld_conf" >/dev/null
+        sudo ldconfig
+        green "    Registered $swift_lib_dir in $ld_conf"
+    else
+        green "    Already registered: $swift_lib_dir"
+    fi
+fi
+
 # 5) Ensure /etc and /var directories with correct ownership.
 sudo install -d -m 0755 "$CONFIG_DIR"
 sudo install -d -o "$SERVICE_USER" -g "$SERVICE_USER" -m 0755 "$STATE_DIR"
