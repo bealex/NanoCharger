@@ -18,6 +18,18 @@ If your distro packages an older `uhubctl`, build from source: <https://github.c
 
 The hubs you intend to control must support per-port power switching (`ppps`) — `uhubctl` lists this in the bracketed descriptor for each hub. Hubs without `ppps` show up in the TUI but are dimmed and skipped, and the daemon cannot toggle their power.
 
+## Quick install (recommended)
+
+The repo ships an `install.sh` script that does everything below in one shot — build the release binary as your user, then `sudo` to install it, set up `/etc/nanocharger/`, `/var/lib/nanocharger/`, the system user, and the systemd unit, and start the daemon. Safe to re-run for upgrades; it preserves any existing `schedule.json`.
+
+```sh
+./install.sh
+```
+
+If a default config gets created (i.e. `/etc/nanocharger/schedule.json` didn't exist), the script pauses and offers to open it in `nano` before starting the daemon — discover the real hub/port ids with `nanocharger ui` (or `uhubctl`) in another terminal first.
+
+The rest of this document walks through the same steps manually.
+
 ## Build
 
 From a checkout on the Pi:
